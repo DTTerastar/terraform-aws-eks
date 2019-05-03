@@ -8,19 +8,7 @@ resource "null_resource" "update_config_map_aws_auth" {
   depends_on = ["aws_eks_cluster.this"]
 
   provisioner "local-exec" {
-    working_dir = "${path.module}"
-
-    command = <<EOS
-for i in `seq 1 10`; do \
-echo "${null_resource.update_config_map_aws_auth.triggers.kube_config_map_rendered}" > kube_config.yaml & \
-echo "${null_resource.update_config_map_aws_auth.triggers.config_map_rendered}" > aws_auth_configmap.yaml & \
-kubectl apply -f aws_auth_configmap.yaml --kubeconfig kube_config.yaml && break || \
-sleep 10; \
-done; \
-rm aws_auth_configmap.yaml kube_config.yaml;
-EOS
-
-    interpreter = ["${var.local_exec_interpreter}"]
+    command = "kubectl apply -f ${local_file.config_map_aws_auth.filename} --kubeconfig ${local_file.kubeconfig.filename}"
   }
 
   triggers {
@@ -79,7 +67,7 @@ data "template_file" "map_roles" {
   template = "${file("${path.module}/templates/config-map-aws-auth-map_roles.yaml.tpl")}"
 
   vars {
-    role_arn = "${lookup(var.map_roles[count.index], "role_arn")}"
+    role_arn = "${replace(lookup(var.map_roles[count.index], "role_arn"),"//[A-Za-z/-]+//","/")}"
     username = "${lookup(var.map_roles[count.index], "username")}"
     group    = "${lookup(var.map_roles[count.index], "group")}"
   }
