@@ -12,7 +12,7 @@ project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Added support for custom service linked role for Auto Scaling group (by @voanhduy1512) 
-- Write your awesome addition here (by @you)
+- Support custom IAM roles for cluster and workers (by @erks)
 
 ### Changed
 
